@@ -9,7 +9,8 @@
     "build": "mastra build",
     "start": "mastra start",
     "ingest": "tsx scripts/ingest.ts",
-    "test-services": "tsx scripts/test-services.ts"
+    "test-services": "tsx scripts/test-services.ts",
+    "test-tools": "tsx scripts/test-tools.ts"
   },
   "keywords": [],
   "author": "",
