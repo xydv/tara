@@ -27,6 +27,7 @@
 
   env = {
     DATABASE_URL = "postgres://postgres:postgres@localhost:5432/provue_tara";
+    MISTRAL_API_KEY = config.secretspec.secrets.MISTRAL_API_KEY;
   };
 
   enterShell = ''
