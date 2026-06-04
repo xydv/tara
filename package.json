@@ -10,7 +10,8 @@
     "start": "mastra start",
     "ingest": "tsx scripts/ingest.ts",
     "test-services": "tsx scripts/test-services.ts",
-    "test-tools": "tsx scripts/test-tools.ts"
+    "test-tools": "tsx scripts/test-tools.ts",
+    "test-agent": "tsx scripts/test-agent.ts"
   },
   "keywords": [],
   "author": "",
