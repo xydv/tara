@@ -24,6 +24,7 @@ export const mastra = new Mastra({
           const requestId = randomUUID();
           const requestContext = new RequestContext();
           requestContext.set('requestId', requestId);
+          requestContext.set('toolTraces', []);
 
           const startedAt = new Date().toISOString();
           const startTime = performance.now();
@@ -32,16 +33,24 @@ export const mastra = new Mastra({
             const response = await agent.generate(question, { requestContext });
             const completedAt = new Date().toISOString();
             const durationMs = Math.round(performance.now() - startTime);
-            const toolCalls = response.toolCalls?.length || 0;
+            const toolDetails = (requestContext.get('toolTraces') as any[]) || [];
+            const toolCalls = toolDetails.length;
+            const toolsCalled = toolDetails.map((t: any) => t.tool);
+            const databaseTablesRead = Array.from(new Set(toolDetails.flatMap((t: any) => t.databaseTablesRead)));
+            const intent = toolDetails.map((t: any) => t.operation).join(', ') || 'general';
 
             await logAskRequest({
               requestId,
               question,
+              intent,
               startedAt,
               completedAt,
               durationMs,
               toolCalls,
               success: true,
+              toolsCalled,
+              toolDetails,
+              databaseTablesRead,
             });
 
             return c.json({
@@ -50,15 +59,25 @@ export const mastra = new Mastra({
           } catch (error: any) {
             const completedAt = new Date().toISOString();
             const durationMs = Math.round(performance.now() - startTime);
+            const toolDetails = (requestContext.get('toolTraces') as any[]) || [];
+            const toolCalls = toolDetails.length;
+            const toolsCalled = toolDetails.map((t: any) => t.tool);
+            const databaseTablesRead = Array.from(new Set(toolDetails.flatMap((t: any) => t.databaseTablesRead)));
+            const intent = toolDetails.map((t: any) => t.operation).join(', ') || 'general';
 
             await logAskRequest({
               requestId,
               question,
+              intent,
               startedAt,
               completedAt,
               durationMs,
-              toolCalls: 0,
+              toolCalls,
               success: false,
+              toolsCalled,
+              toolDetails,
+              databaseTablesRead,
+              errorMessage: error.message || String(error),
             });
 
             return c.json({

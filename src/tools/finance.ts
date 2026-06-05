@@ -25,6 +25,12 @@ export const financeTool = createTool({
     const start = performance.now();
     const requestId = (context as any)?.requestContext?.get("requestId") || "unknown";
     let success = true;
+    const toolTrace: any = {
+      tool: "finance",
+      operation: input.operation,
+      input,
+      databaseTablesRead: ["transactions"],
+    };
     let result: any;
     try {
       switch (input.operation) {
@@ -98,9 +104,18 @@ export const financeTool = createTool({
       return result;
     } catch (error: any) {
       success = false;
+      toolTrace.errorMessage = error.message || String(error);
       throw error;
     } finally {
       const durationMs = Math.round(performance.now() - start);
+      toolTrace.durationMs = durationMs;
+      toolTrace.success = success;
+
+      const traces = (context as any)?.requestContext?.get("toolTraces");
+      if (Array.isArray(traces)) {
+        traces.push(toolTrace);
+      }
+
       await logToolExecution({
         requestId,
         tool: "finance",

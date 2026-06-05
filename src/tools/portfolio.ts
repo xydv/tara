@@ -15,6 +15,12 @@ export const portfolioTool = createTool({
     const start = performance.now();
     const requestId = (context as any)?.requestContext?.get("requestId") || "unknown";
     let success = true;
+    const toolTrace: any = {
+      tool: "portfolio",
+      operation: input.operation,
+      input,
+      databaseTablesRead: ["holdings", "fund_navs"],
+    };
     let result: any;
     try {
       switch (input.operation) {
@@ -39,9 +45,18 @@ export const portfolioTool = createTool({
       return result;
     } catch (error: any) {
       success = false;
+      toolTrace.errorMessage = error.message || String(error);
       throw error;
     } finally {
       const durationMs = Math.round(performance.now() - start);
+      toolTrace.durationMs = durationMs;
+      toolTrace.success = success;
+
+      const traces = (context as any)?.requestContext?.get("toolTraces");
+      if (Array.isArray(traces)) {
+        traces.push(toolTrace);
+      }
+
       await logToolExecution({
         requestId,
         tool: "portfolio",

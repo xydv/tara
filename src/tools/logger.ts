@@ -7,19 +7,34 @@ async function ensureLogDir() {
   await mkdir(join(process.cwd(), "logs"), { recursive: true });
 }
 
-export async function logAskRequest(data: {
+export interface ToolTrace {
+  tool: string;
+  operation: string;
+  input: any;
+  databaseTablesRead: string[];
+  durationMs: number;
+  success: boolean;
+  errorMessage?: string | null;
+}
+
+export interface AskRequestTrace {
   requestId: string;
   question: string;
+  intent?: string;
   startedAt: string;
   completedAt: string;
   durationMs: number;
   toolCalls: number;
   success: boolean;
-}) {
+  toolsCalled: string[];
+  toolDetails: ToolTrace[];
+  databaseTablesRead: string[];
+  errorMessage?: string | null;
+}
+
+export async function logAskRequest(data: AskRequestTrace) {
   await ensureLogDir();
-  const entry = JSON.stringify({
-    ...data,
-  }) + "\n";
+  const entry = JSON.stringify(data) + "\n";
   await appendFile(LOG_FILE, entry, "utf8");
 }
 
@@ -32,8 +47,6 @@ export async function logToolExecution(data: {
   success: boolean;
 }) {
   await ensureLogDir();
-  const entry = JSON.stringify({
-    ...data,
-  }) + "\n";
+  const entry = JSON.stringify(data) + "\n";
   await appendFile(LOG_FILE, entry, "utf8");
 }
