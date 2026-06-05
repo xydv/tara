@@ -1,6 +1,6 @@
 import { db } from "../db/client";
 import { transactions } from "../db/schema/transactions";
-import { and, eq, gte, lte, sql, inArray, ne } from "drizzle-orm";
+import { and, eq, gte, lte, sql, inArray, ne, desc } from "drizzle-orm";
 
 export interface SpendFilters {
   startDate?: string;
@@ -166,6 +166,21 @@ export class TransactionService {
     return result.map((r) => ({
       month: r.month,
       amount: r.amount ? parseFloat(r.amount) : 0,
+    }));
+  }
+
+  async getTransactions(filters?: SpendFilters, limit?: number): Promise<any[]> {
+    const conditions = await this.buildConditions(filters);
+    const result = await db
+      .select()
+      .from(transactions)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(transactions.date))
+      .limit(limit || 1000);
+
+    return result.map(r => ({
+      ...r,
+      amount: parseFloat(r.amount),
     }));
   }
 }

@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { fundService } from "../services/fund";
+import { logToolExecution } from "./logger";
 
 export const fundTool = createTool({
   id: "fundTool",
@@ -11,7 +12,10 @@ export const fundTool = createTool({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }),
-  execute: async (input) => {
+  execute: async (input, context) => {
+    const start = performance.now();
+    const requestId = (context as any)?.requestContext?.get("requestId") || "unknown";
+    let success = true;
     let result: any;
     try {
       switch (input.operation) {
@@ -48,7 +52,18 @@ export const fundTool = createTool({
 
       return result;
     } catch (error: any) {
+      success = false;
       throw error;
+    } finally {
+      const durationMs = Math.round(performance.now() - start);
+      await logToolExecution({
+        requestId,
+        tool: "fund",
+        operation: input.operation,
+        input,
+        durationMs,
+        success,
+      });
     }
   },
 });

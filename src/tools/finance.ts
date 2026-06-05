@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { transactionService } from "../services/transaction";
+import { logToolExecution } from "./logger";
 
 export const financeTool = createTool({
   id: "financeTool",
@@ -12,6 +13,7 @@ export const financeTool = createTool({
       "top_merchants",
       "largest_transaction",
       "monthly_breakdown",
+      "list_transactions",
     ]),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
@@ -19,7 +21,10 @@ export const financeTool = createTool({
     merchant: z.string().optional(),
     limit: z.number().optional(),
   }),
-  execute: async (input) => {
+  execute: async (input, context) => {
+    const start = performance.now();
+    const requestId = (context as any)?.requestContext?.get("requestId") || "unknown";
+    let success = true;
     let result: any;
     try {
       switch (input.operation) {
@@ -77,13 +82,33 @@ export const financeTool = createTool({
           });
           break;
         }
+        case "list_transactions": {
+          result = await transactionService.getTransactions({
+            startDate: input.startDate,
+            endDate: input.endDate,
+            category: input.category,
+            merchant: input.merchant,
+          }, input.limit);
+          break;
+        }
         default:
           throw new Error(`unsupported operation: ${input.operation}`);
       }
 
       return result;
     } catch (error: any) {
+      success = false;
       throw error;
+    } finally {
+      const durationMs = Math.round(performance.now() - start);
+      await logToolExecution({
+        requestId,
+        tool: "finance",
+        operation: input.operation,
+        input,
+        durationMs,
+        success,
+      });
     }
   },
 });
