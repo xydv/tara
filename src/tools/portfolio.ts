@@ -1,7 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { portfolioService } from "../services/portfolio";
-import { logToolCall } from "./logger";
 
 export const portfolioTool = createTool({
   id: "portfolioTool",
@@ -11,7 +10,6 @@ export const portfolioTool = createTool({
     fundId: z.string().optional(),
   }),
   execute: async (input) => {
-    const start = performance.now();
     let result: any;
     try {
       switch (input.operation) {
@@ -32,26 +30,8 @@ export const portfolioTool = createTool({
           throw new Error(`unsupported operation: ${input.operation}`);
       }
 
-      const durationMs = Math.round(performance.now() - start);
-      await logToolCall({
-        tool: "portfolio",
-        operation: input.operation,
-        input,
-        durationMs,
-        success: true,
-      });
-
       return result;
     } catch (error: any) {
-      const durationMs = Math.round(performance.now() - start);
-      await logToolCall({
-        tool: "portfolio",
-        operation: input.operation,
-        input,
-        durationMs,
-        success: false,
-        error: error.message || String(error),
-      });
       throw error;
     }
   },

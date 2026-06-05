@@ -7,33 +7,8 @@
     npm.enable = true;
   };
 
-  packages = with pkgs; [
-    postgresql_16
-  ];
-
-
-  services.postgres = {
-    enable = true;
-    package = pkgs.postgresql_16;
-
-    initialDatabases = [
-      { name = "provue_tara"; }
-    ];
-
-    initialScript = ''
-      ALTER USER postgres PASSWORD 'postgres';
-    '';
-  };
-
   env = {
-    DATABASE_URL = "postgres://postgres:postgres@localhost:5432/provue_tara";
+    POSTGRES_CONNECTION_STRING = config.secretspec.secrets.POSTGRES_CONNECTION_STRING;
     MISTRAL_API_KEY = config.secretspec.secrets.MISTRAL_API_KEY;
   };
-
-  enterShell = ''
-    echo "node: $(node --version)"
-    echo "npm:  $(npm --version)"
-    echo "postgres ready"
-    echo "$DATABASE_URL"
-  '';
-}
+} 

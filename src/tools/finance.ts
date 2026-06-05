@@ -1,7 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { transactionService } from "../services/transaction";
-import { logToolCall } from "./logger";
 
 export const financeTool = createTool({
   id: "financeTool",
@@ -17,10 +16,10 @@ export const financeTool = createTool({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     category: z.string().optional(),
+    merchant: z.string().optional(),
     limit: z.number().optional(),
   }),
   execute: async (input) => {
-    const start = performance.now();
     let result: any;
     try {
       switch (input.operation) {
@@ -29,12 +28,18 @@ export const financeTool = createTool({
             startDate: input.startDate,
             endDate: input.endDate,
             category: input.category,
+            merchant: input.merchant,
           });
           result = { totalSpend: total };
           break;
         }
         case "category_spend": {
-          const breakdown = await transactionService.getCategorySpend();
+          const breakdown = await transactionService.getCategorySpend({
+            startDate: input.startDate,
+            endDate: input.endDate,
+            category: input.category,
+            merchant: input.merchant,
+          });
           if (input.category) {
             const filtered = breakdown.find(
               (item) => item.category === input.category?.trim().toLowerCase()
@@ -46,41 +51,38 @@ export const financeTool = createTool({
           break;
         }
         case "top_merchants": {
-          result = await transactionService.getTopMerchants(input.limit || 5);
+          result = await transactionService.getTopMerchants(input.limit || 5, {
+            startDate: input.startDate,
+            endDate: input.endDate,
+            category: input.category,
+            merchant: input.merchant,
+          });
           break;
         }
         case "largest_transaction": {
-          result = await transactionService.getLargestTransaction();
+          result = await transactionService.getLargestTransaction({
+            startDate: input.startDate,
+            endDate: input.endDate,
+            category: input.category,
+            merchant: input.merchant,
+          });
           break;
         }
         case "monthly_breakdown": {
-          result = await transactionService.getMonthlySpend();
+          result = await transactionService.getMonthlySpend({
+            startDate: input.startDate,
+            endDate: input.endDate,
+            category: input.category,
+            merchant: input.merchant,
+          });
           break;
         }
         default:
           throw new Error(`unsupported operation: ${input.operation}`);
       }
 
-      const durationMs = Math.round(performance.now() - start);
-      await logToolCall({
-        tool: "finance",
-        operation: input.operation,
-        input,
-        durationMs,
-        success: true,
-      });
-
       return result;
     } catch (error: any) {
-      const durationMs = Math.round(performance.now() - start);
-      await logToolCall({
-        tool: "finance",
-        operation: input.operation,
-        input,
-        durationMs,
-        success: false,
-        error: error.message || String(error),
-      });
       throw error;
     }
   },
