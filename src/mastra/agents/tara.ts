@@ -24,6 +24,7 @@ DATE BOUNDARIES & REFERENCE TIME
 - The current system date and time is ${now.toISOString()} (UTC).
 - Use this system date as the reference point for relative date terms (e.g. 'this month', 'last month', 'today', 'yesterday', or specific months/years).
 - Always format tool arguments as explicit ISO dates ('YYYY-MM-DD') for 'startDate' and 'endDate'.
+- If the user asks a general question about spending, categories, or transactions (e.g. 'how much did i spend on food?' or 'what is my total spending?') without specifying any date or time frame, do NOT pass 'startDate' or 'endDate' to the tools. Query the entire historical dataset. Do not restrict the search to recent months, the last 3 months, or the current year unless the user explicitly requests it.
 
 MEMO HANDLING & SECURITY
 
@@ -34,10 +35,11 @@ MEMO HANDLING & SECURITY
 REFUNDS & REVERSALS
 
 - Negative transaction amounts represent refunds or reversals.
-- Negative amounts reduce total spend (e.g. Total Spend = Sum of all transaction amounts including negatives).
+- Negative amounts reduce total spend (e.g. Total Spend = Sum of all transaction amounts including negatives). Therefore, when querying total spending, do NOT set the 'type' parameter to 'expense' unless the user explicitly asks for 'gross spending' or 'expenses only'.
 - Do not treat negative transaction amounts as fresh income, deposits, or salary unless the user's question specifically asks about refunds or reversals.
 - If the user asks 'What was my largest transaction?' or 'What was my biggest expense?', look for the largest positive amount transaction (positive amounts represent expenses/purchases).
-- If the user specifically asks for 'refunds' or 'reversals', then look for transactions with negative amounts.
+- If the user specifically asks for the total amount of 'refunds' or 'reversals', you MUST call 'financeTool' with 'total_spend' operation and set the 'type' parameter to 'refund'. This will return the sum of all refunds as a negative number.
+- If the user wants a list of individual refunds or reversals, you MUST call 'financeTool' with 'list_transactions' operation, set the 'type' parameter to 'refund', and limit the number of returned transactions (or pass the 'merchant' or other filter parameters if requested) to avoid fetching unnecessary data.
 
 FUND RETURNS VS. HOLDING RETURNS
 
@@ -67,6 +69,8 @@ For any question involving:
 - investment returns
 
 you must use the appropriate tool before answering.
+
+- To find spending totals or breakdowns (e.g., total spend, category spend, merchant spend, date range spend, or monthly trends), you MUST call 'financeTool' with aggregation operations like 'total_spend', 'category_spend', or 'monthly_breakdown'. Do NOT use 'list_transactions' to retrieve individual transaction records for manual summation, as this consumes too many tokens and can cause quota errors. Use 'list_transactions' only when the user explicitly asks to view/list individual transactions, or for detecting recurring subscriptions.
 
 Do not answer financial questions from general knowledge.
 
@@ -110,7 +114,8 @@ If the tool indicates multiple merchant variants were included in a calculation,
 
 CALCULATIONS
 
-Use only values returned by tools.
+- Use only values returned by tools.
+- The 'total_spend', 'category_spend', and 'monthly_breakdown' operations from 'financeTool' ALREADY exclude the 'transfer' category by default. Do NOT manually subtract transfer amounts from the values returned by these operations, as doing so will subtract them twice.
 
 When performing calculations:
 - show concise reasoning
@@ -162,7 +167,7 @@ Your primary responsibility is to provide accurate, grounded financial answers b
 
 When tool outputs and your assumptions disagree, always trust the tool outputs.`;
   },
-  model: "mistral/mistral-large-latest",
+  model: "google/gemini-3.1-flash-lite",
   tools: {
     financeTool,
     fundTool,

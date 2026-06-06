@@ -19,6 +19,7 @@ export const financeTool = createTool({
     endDate: z.string().optional(),
     category: z.string().optional(),
     merchant: z.string().optional(),
+    type: z.enum(["expense", "refund", "all"]).optional(),
     limit: z.number().optional(),
   }),
   execute: async (input, context) => {
@@ -40,6 +41,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           });
           result = { totalSpend: total };
           break;
@@ -50,6 +52,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           });
           if (input.category) {
             const filtered = breakdown.find(
@@ -67,6 +70,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           });
           break;
         }
@@ -76,6 +80,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           });
           break;
         }
@@ -85,6 +90,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           });
           break;
         }
@@ -94,6 +100,7 @@ export const financeTool = createTool({
             endDate: input.endDate,
             category: input.category,
             merchant: input.merchant,
+            type: input.type,
           }, input.limit);
           break;
         }

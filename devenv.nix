@@ -9,6 +9,7 @@
 
   env = {
     POSTGRES_CONNECTION_STRING = config.secretspec.secrets.POSTGRES_CONNECTION_STRING;
-    MISTRAL_API_KEY = config.secretspec.secrets.MISTRAL_API_KEY;
+    GOOGLE_API_KEY = config.secretspec.secrets.GOOGLE_API_KEY;
+    GOOGLE_GENERATIVE_AI_API_KEY = config.secretspec.secrets.GOOGLE_GENERATIVE_AI_API_KEY;
   };
 } 

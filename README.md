@@ -10,8 +10,8 @@ tara is an ai-powered agentic financial assistant built using the mastra framewo
 - **runtime**: node.js (>= 22.13.0)
 - **language**: typescript
 - **database**: postgresql (queried using drizzle orm)
-- **llm provider**: mistral ai
-- **llm model**: `mistral/mistral-large-latest`
+- **llm provider**: google gemini
+- **llm model**: `google/gemini-3.1-flash-lite`
 
 ---
 
@@ -20,8 +20,9 @@ tara is an ai-powered agentic financial assistant built using the mastra framewo
 create a `.env` file in the root directory with the following variables (a `.env.example` is given for reference):
 
 ```env
-database_url="postgresql://postgres:postgres@localhost:5432/tara"
-mistral_api_key="your-mistral-api-key"
+POSTGRES_CONNECTION_STRING="postgresql://..."
+GOOGLE_API_KEY="your-google-api-key"
+GOOGLE_GENERATIVE_AI_API_KEY="your-google-api-key"
 ```
 
 ---

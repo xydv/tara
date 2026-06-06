@@ -1,12 +1,13 @@
 import { db } from "../db/client";
 import { transactions } from "../db/schema/transactions";
-import { and, eq, gte, lte, sql, inArray, ne, desc } from "drizzle-orm";
+import { and, eq, gte, lte, sql, inArray, ne, desc, lt, gt } from "drizzle-orm";
 
 export interface SpendFilters {
   startDate?: string;
   endDate?: string;
   category?: string;
   merchant?: string;
+  type?: "expense" | "refund" | "all";
 }
 
 export class TransactionService {
@@ -77,6 +78,11 @@ export class TransactionService {
       } else {
         conditions.push(eq(transactions.canonicalMerchant, "__NON_EXISTENT__"));
       }
+    }
+    if (filters?.type === "expense") {
+      conditions.push(gt(transactions.amount, "0"));
+    } else if (filters?.type === "refund") {
+      conditions.push(lt(transactions.amount, "0"));
     }
     return conditions;
   }
