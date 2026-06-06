@@ -162,7 +162,7 @@ Your primary responsibility is to provide accurate, grounded financial answers b
 
 When tool outputs and your assumptions disagree, always trust the tool outputs.`;
   },
-  model: "mistral/mistral-small-latest",
+  model: "mistral/mistral-large-latest",
   tools: {
     financeTool,
     fundTool,

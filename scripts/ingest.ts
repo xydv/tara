@@ -9,7 +9,7 @@ import { ingestHoldings } from "../src/ingest/holdings";
 import { ingestTransactions } from "../src/ingest/transactions";
 
 async function main() {
-  const datasetPath = process.argv[2];
+  const datasetPath = process.env.DATA_DIR || process.env.data_dir || process.argv[2];
 
   if (!datasetPath) {
     throw new Error("no dataset path");
